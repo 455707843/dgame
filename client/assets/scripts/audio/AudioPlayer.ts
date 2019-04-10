@@ -120,7 +120,6 @@ export default class AudioPlayer
     {
         if(this.m_sCurrentMusicName == file && this.m_iMusicID >= 0)
         {
-            // cc.log(">>>>>>>>>>>PlayMusic",file);
             return;
         }
         let path = AudioPlayer.GetUrl(file,AudioType.Music);
@@ -235,7 +234,6 @@ export default class AudioPlayer
             {
                 cc.audioEngine.setMusicVolume(this.m_iMusicVolume);
             }
-            // cc.log("***************************************************************************************");
             let mid = cc.audioEngine.playMusic(clip,loop);
             this.m_iMusicID = mid;
         }

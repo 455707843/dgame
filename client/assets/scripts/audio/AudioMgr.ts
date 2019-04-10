@@ -1,8 +1,7 @@
 
 import AudioPlayer from "./AudioPlayer";
-import {CoreEventID} from "../CoreDefine";
 import Core from "../Core";
-import ITick from "../interface/ITick";
+import {EventID} from "../event/EventMgr";
 
 export default class AudioMgr
 {
@@ -12,11 +11,10 @@ export default class AudioMgr
     {
         this.m_stAudioPlayer = new AudioPlayer();
         this.m_stAudioPlayer.Init();
-        cc.audioEngine.setMaxWebAudioSize(300);
-        Core.EventMgr.BindEvent(CoreEventID.SdkEvent.ON_HIDE,this.OnAudioInterruptionBeginHandler,this);
-        Core.EventMgr.BindEvent(CoreEventID.SdkEvent.ON_SHOW,this.OnAudioInterruptionEndHandler,this);
-        Core.EventMgr.BindEvent(CoreEventID.SdkEvent.AUDIO_INTERRUPTION_BEGIN,this.OnAudioInterruptionBeginHandler,this);
-        Core.EventMgr.BindEvent(CoreEventID.SdkEvent.AUDIO_INTERRUPTION_END,this.OnAudioInterruptionEndHandler,this);
+        Core.EventMgr.Bind(EventID.SdkEvent.ON_HIDE,this.OnAudioInterruptionBeginHandler,this);
+        Core.EventMgr.Bind(EventID.SdkEvent.ON_SHOW,this.OnAudioInterruptionEndHandler,this);
+        Core.EventMgr.Bind(EventID.SdkEvent.AUDIO_INTERRUPTION_BEGIN,this.OnAudioInterruptionBeginHandler,this);
+        Core.EventMgr.Bind(EventID.SdkEvent.AUDIO_INTERRUPTION_END,this.OnAudioInterruptionEndHandler,this);
     }
 
     private OnAudioInterruptionBeginHandler(): void

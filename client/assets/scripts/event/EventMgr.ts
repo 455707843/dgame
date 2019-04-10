@@ -13,7 +13,7 @@ export default class EventMgr
         }
     }
 
-    public emit(type: number,data: any): void
+    public Emit(type: number,data: any): void
     {
         let arrEvent: Array<EventObject> = this.m_mapCallBack.get(type);
         if(arrEvent && arrEvent.length > 0)
@@ -26,7 +26,7 @@ export default class EventMgr
         }
     }
 
-    public bind(type: number,callBack: Function,target: any): void
+    public Bind(type: number,callBack: Function,target: any): void
     {
         let arrEvent: Array<EventObject> = this.m_mapCallBack.get(type);
         if(!arrEvent)
@@ -52,7 +52,7 @@ export default class EventMgr
         arrEvent.push(eventObject);
     }
 
-    public unbind(type: number,callBack: Function,target: any): void
+    public Unbind(type: number,callBack: Function,target: any): void
     {
         let arrEvent: Array<EventObject> = this.m_mapCallBack.get(type);
         if(arrEvent && arrEvent.length > 0)
@@ -70,7 +70,7 @@ export default class EventMgr
         }
     }
 
-    public unbindTarget(target: any): void
+    public UnbindTarget(target: any): void
     {
         this.m_mapCallBack.forEach((value,key) =>
         {
@@ -106,5 +106,22 @@ export class EventID
 
     public static readonly BattleEvent = {
         START_BATTLE: EventID.CreateID,
+    }
+
+    public static readonly SdkEvent = {
+        /**游戏运行后，重新显示时的事件 */
+        ON_SHOW: EventID.CreateID,
+        /**玩家点击隐藏按钮 */
+        ON_HIDE: EventID.CreateID,
+        /**音频中断开始 */
+        AUDIO_INTERRUPTION_BEGIN: EventID.CreateID,
+        /**音频中断结束 */
+        AUDIO_INTERRUPTION_END: EventID.CreateID,
+    };
+
+    public static readonly LoadProcessEvent = {
+        LoadScene: EventID.CreateID,
+        LoadSceneOver: EventID.CreateID,
+        LoadProgress: EventID.CreateID,
     }
 }

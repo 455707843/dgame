@@ -7,8 +7,12 @@ export class MapData
     floor: number;
     //格子大小 正方形,长宽相同
     gridSize: number;
+    //地图宽
+    width: number;
+    //地图高
+    height: number;
     //格子数组
-    grid: Array<Array<eGridType>>;
+    grid: Array<Array<GridData>>;
 }
 
 export class GridData
@@ -19,12 +23,14 @@ export class GridData
     x: number;
     //格子地图坐标y
     y: number;
+    //格子类型
+    type: eGridType;
 }
 
 //格子类型 地形
 export enum eGridType
 {
-
+    Flat = 0,//平地
 }
 
 //人物信息(包括人物基本信息)
@@ -37,25 +43,16 @@ export class PlayerData
     y: number;
     //层信息 0层默认home 1-99特殊场景层 100-199战斗场景层 200-299战斗场景层......
     cell: number;
+    //行动力
+    power: number;
 
 }
-
-
-
-
-
-
-
-
-
-
-
 
 //人物战斗信息
 export class PlayerBattleData
 {
     //士气 非常重要的属性 决定旗子先后顺序 决定玩家是否存亡 士气亡, 则人亡
-    morale:number;
+    morale: number;
     //携带的兵种
 
 }
