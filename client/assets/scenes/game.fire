@@ -41,8 +41,8 @@
     },
     "_scale": {
       "__type__": "cc.Vec3",
-      "x": 0.5405415858344511,
-      "y": 0.5405415858344511,
+      "x": 0.5190329963128801,
+      "y": 0.5190329963128801,
       "z": 1
     },
     "_quat": {
@@ -52,7 +52,6 @@
       "z": 0,
       "w": 1
     },
-    "_zIndex": 0,
     "groupIndex": 0,
     "autoReleaseAssets": false,
     "_id": "920e8b6b-8428-48ac-a344-7564765ce4ae"
@@ -127,7 +126,6 @@
     },
     "_skewX": 0,
     "_skewY": 0,
-    "_zIndex": 0,
     "groupIndex": 0,
     "_id": "a7PP45j2RISZ9hgbH6BEmx"
   },
@@ -188,7 +186,6 @@
     },
     "_skewX": 0,
     "_skewY": 0,
-    "_zIndex": 0,
     "groupIndex": 0,
     "_id": "40iU4CDmVB8L+XzXC7zGl9"
   },
@@ -222,7 +219,7 @@
       "__id__": 2
     },
     "_children": [],
-    "_active": true,
+    "_active": false,
     "_level": 1,
     "_components": [
       {
@@ -271,7 +268,6 @@
     },
     "_skewX": 0,
     "_skewY": 0,
-    "_zIndex": 0,
     "groupIndex": 0,
     "_id": "03cch3F6tEk5TRrRkLhA3w"
   },
@@ -283,8 +279,6 @@
       "__id__": 5
     },
     "_enabled": true,
-    "_srcBlendFactor": 770,
-    "_dstBlendFactor": 771,
     "_spriteFrame": {
       "__uuid__": "8df865f9-b2ac-4f20-8154-ee449be6f467"
     },
@@ -301,6 +295,8 @@
     "_isTrimmedMode": true,
     "_state": 0,
     "_atlas": null,
+    "_srcBlendFactor": 770,
+    "_dstBlendFactor": 771,
     "_id": "f1OPBiaC9EO7QHgzkVLNb/"
   },
   {
@@ -349,18 +345,17 @@
       "y": 1,
       "z": 1
     },
-    "_rotationX": 0,
-    "_rotationY": 0,
+    "_rotationX": -33,
+    "_rotationY": -33,
     "_quat": {
       "__type__": "cc.Quat",
       "x": 0,
       "y": 0,
-      "z": 0,
-      "w": 1
+      "z": 0.28401534470392265,
+      "w": 0.958819734868193
     },
-    "_skewX": 0,
-    "_skewY": 0,
-    "_zIndex": 0,
+    "_skewX": -15,
+    "_skewY": -15,
     "groupIndex": 0,
     "_id": "77mz5zHXlH55A4FRJDggHA"
   },
@@ -372,8 +367,6 @@
       "__id__": 7
     },
     "_enabled": true,
-    "_srcBlendFactor": 770,
-    "_dstBlendFactor": 771,
     "_spriteFrame": {
       "__uuid__": "f6411ce6-1b87-49dd-97fb-6fd97b0c1b9a"
     },
@@ -390,6 +383,8 @@
     "_isTrimmedMode": true,
     "_state": 0,
     "_atlas": null,
+    "_srcBlendFactor": 770,
+    "_dstBlendFactor": 771,
     "_id": "97uWLQYmRCE4FF3QeyngTg"
   },
   {

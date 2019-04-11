@@ -25,6 +25,8 @@ export class GridData
     y: number;
     //格子类型
     type: eGridType;
+    //临时消耗
+    temp: number;
 }
 
 //格子类型 地形

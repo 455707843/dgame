@@ -20,7 +20,7 @@ export class QualityQueue
      * @param {*} data 数据值
      * @returns {boolean} isSuccess 返回插入是否成功
      */
-    public Push(data)
+    public Push(data): boolean
     {
         this.m_arrQueue[this.m_iCurrSize] = data;
         this.Up(this.m_iCurrSize);
@@ -33,7 +33,7 @@ export class QualityQueue
      *
      * @returns {*} data 根元素的数据值
      */
-    public Pop()
+    public Pop(): any
     {
         if(this.m_iCurrSize <= 0)
         {
@@ -46,7 +46,12 @@ export class QualityQueue
         return maxValue;
     };
 
-    private Down(start: number,limit: number)
+    public Size(): number
+    {
+        return this.m_iCurrSize;
+    }
+
+    private Down(start: number,limit: number): void
     {
         //父节点
         let parentIndex: number = start;
@@ -76,7 +81,7 @@ export class QualityQueue
         }
     }
 
-    private Up(start: number)
+    private Up(start: number): void
     {
         let childIndex: number = start;   //当前叶节点
         let parentIndex: number = Math.floor((childIndex - 1) / 2); //父节点

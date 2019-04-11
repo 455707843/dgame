@@ -1,13 +1,16 @@
 import {GridData,MapData,PlayerData} from "../Data";
+import {QualityQueue} from "../util/QualityQueue";
 
 export default class ReachGrid
 {
     private m_arrReach: Array<GridData> = [];
     private m_arrReachedFlag: Array<Array<number>> = [];
+    private m_stQualityQueue: QualityQueue = new QualityQueue;
     private DIR: Array<Array<number>> = [[0,1],[0,-1],[1,0],[-1,0]];
     public GetReachGrid(map: MapData,player: PlayerData): Array<GridData>
     {
         this.m_arrReach = [];
+        this.m_stQualityQueue.Init("temp");
         for(let i: number = 0;i < map.width;i++)
         {
             this.m_arrReachedFlag[i] = [];
@@ -34,28 +37,23 @@ export default class ReachGrid
             return;
         }
         this.m_arrReach.push(map.grid[posX][posY]);
-        this.m_arrReachedFlag[posX][posY] = power;
-        //走过
-        // for(let i: number = 0;i < this.m_arrReach.length;i++)
-        // {
-        //     if(map.grid[posX][posY] == this.m_arrReach[i])
-        //     {
-        //         return;
-        //     }
-        // }
-        for(let i: number = 0;i < this.m_arrReach.length;i++)
+        this.m_stQualityQueue.Push(map.grid[posX][posY]);
+        this.m_arrReachedFlag[posX][posY] = power
+        map.grid[posX][posY].temp = power;
+        while(this.m_stQualityQueue.Size())
         {
+            let curNode: GridData = this.m_stQualityQueue.Pop();
             for(let j: number = 0;j < 4;j++)
             {
-                let tempX: number = this.m_arrReach[i].x + this.DIR[j][0];
-                let tempY: number = this.m_arrReach[i].y + this.DIR[j][1];
+                let tempX: number = curNode.x + this.DIR[j][0];
+                let tempY: number = curNode.y + this.DIR[j][1];
                 //超边界
                 if(tempX < 0 || tempX >= map.width || tempY < 0 || tempY >= map.height)
                 {
                     continue;
                 }
-                let cost: number = this.m_arrReachedFlag[this.m_arrReach[i].x][this.m_arrReach[i].y] - map.grid[tempX][tempY].cost;
-                if(cost <= 0)
+                let cost: number = curNode.temp - map.grid[tempX][tempY].cost;
+                if(cost < 0)
                 {
                     continue;
                 }
@@ -63,10 +61,8 @@ export default class ReachGrid
                 {
                     this.m_arrReach.push(map.grid[tempX][tempY]);
                     this.m_arrReachedFlag[tempX][tempY] = cost;
-                }
-                else
-                {
-                    this.m_arrReachedFlag[tempX][tempY] = Math.max(this.m_arrReachedFlag[tempX][tempY],cost);
+                    this.m_stQualityQueue.Push(map.grid[tempX][tempY]);
+                    map.grid[tempX][tempY].temp = cost;
                 }
             }
         }
