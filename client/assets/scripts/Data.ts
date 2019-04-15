@@ -47,62 +47,76 @@ export class PlayerData
     cell: number;
     //行动力
     power: number;
-
-}
-
-//人物战斗信息
-export class PlayerBattleData
-{
-    //士气 非常重要的属性 决定旗子先后顺序 决定玩家是否存亡 士气亡, 则人亡
+    //气势 非常重要的属性 决定旗子先后顺序 决定玩家是否存亡 气势亡, 则人亡
     morale: number;
-    //携带的兵种
-
+    //侍者
+    servant: Array<ServantData> = [];
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 //侍者信息
 export class ServantData
 {
+    //统御
+    leadership: number;
+    //攻击
+    attack: number;
+    //防御
+    defense: number;
+    //智力
+    intelligence: number;
+    //政治
+    politics: number;
+    //魅力
+    charm: number;
+    //埋伏
+    ambush: number;
+    //侦查
+    spy: number;
+    //军师
+    counsellor: boolean;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

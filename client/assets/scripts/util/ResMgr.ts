@@ -7,13 +7,8 @@ export default class ResMgr
 {
     private m_arrRes: Map<ResType,Map<string,ResStruct>>;
     private m_mapLoadInfo: Map<ResType,Map<string,Array<Function>>>;
-
-    /**场景预加载资源,key：sceneName */
     private m_mapScenePreloadRes: Map<string,Array<ResStruct>>;
-    /**场景后加载资源,key：sceneName */
-    private m_mapSceneAfterloadRes: Map<string,Array<ResStruct>>;
     private m_fnLoadScene: Function;
-    private m_setAutoRelease: Set<string>;
 
     /**正在主动加载的数量 */
     private m_iLoadingCnt: number = 0;
@@ -23,8 +18,18 @@ export default class ResMgr
         this.m_arrRes = new Map<ResType,Map<string,ResStruct>>();
         this.m_mapLoadInfo = new Map<ResType,Map<string,Array<Function>>>();
         this.m_mapScenePreloadRes = new Map<string,Array<ResStruct>>();
-        this.m_mapSceneAfterloadRes = new Map<string,Array<ResStruct>>();
-        this.m_setAutoRelease = new Set<string>();
+        this.m_arrRes.set(ResType.AudioClip,new Map<string,ResStruct>());
+        this.m_arrRes.set(ResType.Bitmap,new Map<string,ResStruct>());
+        this.m_arrRes.set(ResType.Json,new Map<string,ResStruct>());
+        this.m_arrRes.set(ResType.Prefab,new Map<string,ResStruct>());
+        this.m_arrRes.set(ResType.Spine,new Map<string,ResStruct>());
+        this.m_arrRes.set(ResType.Text,new Map<string,ResStruct>());
+        this.m_mapLoadInfo.set(ResType.AudioClip,new Map<string,Array<Function>>());
+        this.m_mapLoadInfo.set(ResType.Bitmap,new Map<string,Array<Function>>());
+        this.m_mapLoadInfo.set(ResType.Json,new Map<string,Array<Function>>());
+        this.m_mapLoadInfo.set(ResType.Prefab,new Map<string,Array<Function>>());
+        this.m_mapLoadInfo.set(ResType.Spine,new Map<string,Array<Function>>());
+        this.m_mapLoadInfo.set(ResType.Text,new Map<string,Array<Function>>());
     }
 
     public get IsLoading(): boolean
@@ -42,28 +47,20 @@ export default class ResMgr
     {
         if(!resData.m_sUrl)
         {
-            //cc.log("资源路径错误:" + resData.m_sUrl);
             return;
         }
-        let that = this;
         let type = resData.m_iResType;
         let url = resData.m_sUrl;
-        let auto = resData.m_bAutoRelease;
-        resData.Reset();
+        this.m_arrRes.get(type).set(url,resData);
 
-        if(!that.m_arrRes.get(type))
-        {
-            that.m_arrRes.set(type,new Map<string,ResStruct>());
-            that.m_mapLoadInfo.set(type,new Map<string,Array<Function>>());
-        }
         //如果已经加载过的直接返回资源
-        let retRes: ResStruct = that.m_arrRes.get(type).get(url);
+        let retRes: ResStruct = this.m_arrRes.get(type).get(url);
         if(retRes && retRes.Data)
         {
             fnCallback(retRes.Data);
             return;
         }
-        let arrCallback: Array<Function> = that.m_mapLoadInfo.get(type).get(url);
+        let arrCallback: Array<Function> = this.m_mapLoadInfo.get(type).get(url);
         if(arrCallback)
         {
             arrCallback.push(fnCallback);
@@ -71,63 +68,20 @@ export default class ResMgr
         else                                                                                                                                                              
         {
             arrCallback = new Array<Function>();
-            that.m_mapLoadInfo.get(type).set(url,arrCallback);
+            this.m_mapLoadInfo.get(type).set(url,arrCallback);
             arrCallback.push(fnCallback);
-            if(-1 != url.search("http"))//isFromNetWork && -1 != url.search("http")
+            this.m_iLoadingCnt++;
+            cc.loader.loadRes(url,-1 != url.search("http") ? "image" : this.GetResType(type),(err,resItem) =>
             {
-                that.m_iLoadingCnt++;
-                cc.loader.load({url: url,type: "image"},function(err,resItem)
+                this.m_iLoadingCnt--;
+                if(err || !resItem)
                 {
-                    that.m_iLoadingCnt--;
-                    if(err)
-                    {
-                        console.error("LoadRes Error::url:" + url);
-                        return;
-                    }
-                    if(!resItem)
-                    {
-                        return;
-                    }
-                    let retRes: ResStruct = ObjectPool.CheckOut(ResStruct);
-                    retRes.SetData(resItem,type);
-                    retRes.m_sUrl = url;
-                    retRes.m_bAutoRelease = auto;
-                    retRes.m_iResType = type;
-
-                    that.m_arrRes.get(type).set(url,retRes);
-                    that.OnCompleteCallback(url,type);
-                    that.m_setAutoRelease.delete(type + url);
-                    cc.loader.setAutoReleaseRecursively(url,auto);
-                    //资源引用
-                });
-            }
-            else
-            {
-                that.m_iLoadingCnt++;
-                cc.loader.loadRes(url,this.GetResType(type),function(err,resItem)
-                {
-                    that.m_iLoadingCnt--;
-                    if(err)
-                    {
-                        console.error("LoadRes Error::url:" + url);
-                        return;
-                    }
-                    if(!resItem)
-                    {
-                        //cc.log(url + " is Error URL! type:",type);
-                        return;
-                    }
-                    let retRes: ResStruct = ObjectPool.CheckOut(ResStruct);
-                    retRes.SetData(resItem,type);
-                    retRes.m_sUrl = url;
-                    retRes.m_bAutoRelease = auto;
-                    retRes.m_iResType = type;
-                    that.m_arrRes.get(type).set(url,retRes);
-                    that.OnCompleteCallback(url,type);
-                    that.m_setAutoRelease.delete(type + url);
-                    cc.loader.setAutoReleaseRecursively(url,auto);
-                });
-            }
+                    console.error("LoadRes Error::url:" + url);
+                    return;
+                }
+                this.m_arrRes.get(type).get(url).SetData(resItem,type);
+                this.OnCompleteCallback(url,type);
+            });
         }
     }
 
@@ -136,7 +90,7 @@ export default class ResMgr
      * @param arrResStruct 加载队列
      * @param fnCallBack 加载回调函数，返回的数据类型是`Array<ResStruct>`
      */
-    public LoadResArray(arrResStruct: Array<ResStruct>,fnCallBack?: Function,bCheckInResStruct: boolean = false): void
+    public LoadResArray(arrResStruct: Array<ResStruct>,fnCallBack?: Function): void
     {
         if(!arrResStruct.length)
         {
@@ -146,7 +100,6 @@ export default class ResMgr
             }
             return;
         }
-        let that = this;
         let iCallbackTime: number = 0
         let mapQueue: Map<ResType,Array<string>> = new Map<ResType,Array<string>>();
         let mapStatsCompleted: Map<ResType,number> = new Map<ResType,number>();
@@ -156,13 +109,7 @@ export default class ResMgr
         for(let resData of arrResStruct)
         {
             let mapResByType: Map<string,ResStruct> = this.m_arrRes.get(resData.m_iResType);
-            if(!mapResByType)
-            {
-                mapResByType = new Map<string,ResStruct>()
-                this.m_arrRes.set(resData.m_iResType,mapResByType);
-                this.m_mapLoadInfo.set(resData.m_iResType,new Map<string,Array<Function>>());
-            }
-            if(mapResByType.has(resData.m_sUrl))
+            if(mapResByType.has(resData.m_sUrl) && mapResByType.get(resData.m_sUrl).Data)
             {
                 arrResCompleted.push(mapResByType.get(resData.m_sUrl));
             }
@@ -172,23 +119,15 @@ export default class ResMgr
                 {
                     arrQueue = new Array<string>();
                     mapQueue.set(resData.m_iResType,arrQueue);
-                    iCallbackTime++;
                 }
                 else
                 {
                     arrQueue = mapQueue.get(resData.m_iResType);
                 }
-                that.m_setAutoRelease.has(resData.m_iResType + resData.m_sUrl);
+                iCallbackTime++;
                 arrQueue.push(resData.m_sUrl);
+                mapResByType.set(resData.m_sUrl,resData);
             }
-            if(bCheckInResStruct)
-            {
-                resData.Reset();
-            }
-        }
-        if(bCheckInResStruct)
-        {
-            arrResStruct.length = 0;
         }
 
         if(iCallbackTime == 0)
@@ -199,32 +138,33 @@ export default class ResMgr
             }
             return;
         }
-        mapQueue.forEach(function(arrQueue,resType)
+        mapQueue.forEach((arrQueue,resType) =>
         {
             if(arrQueue.length == 0)
             {
                 return;
             }
-            that.m_iLoadingCnt++;
-            cc.loader.loadResArray(arrQueue,that.GetResType(resType),function(cnt,total,item)
-            {
-                mapStatsCompleted.set(resType,cnt);
-                mapStatsTotal.set(resType,total)
-                let iCompletedCnt: number = 0;
-                let iTotalCnt: number = 0;
-                mapStatsCompleted.forEach(value =>
+            this.m_iLoadingCnt++;
+            cc.loader.loadResArray(arrQueue,this.GetResType(resType),
+                (cnt,total,item) =>
                 {
-                    iCompletedCnt += value;
-                });
-                mapStatsTotal.forEach(value =>
+                    mapStatsCompleted.set(resType,cnt);
+                    mapStatsTotal.set(resType,total)
+                    let iCompletedCnt: number = 0;
+                    let iTotalCnt: number = 0;
+                    mapStatsCompleted.forEach(value =>
+                    {
+                        iCompletedCnt += value;
+                    });
+                    mapStatsTotal.forEach(value =>
+                    {
+                        iTotalCnt += value;
+                    });
+                    this.OnProgressCallback(iCompletedCnt,iTotalCnt);
+                },
+                (err,arrRes) =>
                 {
-                    iTotalCnt += value;
-                });
-                that.OnProgressCallback(iCompletedCnt,iTotalCnt);
-            },
-                function(err,arrRes)
-                {
-                    that.m_iLoadingCnt--;
+                    this.m_iLoadingCnt--;
                     iCallbackTime--;
                     if(err || !arrRes)
                     {
@@ -235,19 +175,9 @@ export default class ResMgr
                         if(arrRes[i])
                         {
                             let url: string = arrQueue[i];
-                            if(that.m_setAutoRelease.has(resType + url))
-                            {
-                                that.m_setAutoRelease.delete(resType + url);
-                                cc.loader.setAutoReleaseRecursively(url,true);
-                            }
-                            let res: ResStruct = ResStruct.CreateRes(url,resType);
+                            let res: ResStruct = this.m_arrRes.get(resType).get(url);
                             res.SetData(arrRes[i],resType);
-                            that.m_arrRes.get(resType).set(url,res);
                             arrResCompleted.push(res);
-                        }
-                        else
-                        {
-                            //cc.log(arrQueue[i] + " is Error URL! type:",resType);
                         }
                     }
                     //只剩一次时回调
@@ -288,36 +218,6 @@ export default class ResMgr
         }
     }
 
-
-    /**
-     * 添加一个预加载资源到队列中
-     * @param res 资源描述
-     * @param sceneName 绑定的场景名
-     */
-    public AddAfterLoadResByScene(res: ResStruct,sceneName: string): void
-    {
-        let arrRes: Array<ResStruct>;
-        arrRes = this.m_mapSceneAfterloadRes.get(sceneName);
-        if(!arrRes)
-        {
-            arrRes = new Array<ResStruct>();
-            this.m_mapSceneAfterloadRes.set(sceneName,arrRes);
-        }
-        let isNew: boolean = true;
-        arrRes.forEach(function(testRes)
-        {
-            if(testRes.m_sUrl == res.m_sUrl && testRes.m_iResType == res.m_iResType)
-            {
-                isNew = false;
-                return;
-            }
-        })
-        if(isNew)
-        {
-            arrRes.push(res);
-        }
-    }
-
     /**
      * 场景预加载单个文件
      * 该文件在切换场景前加载
@@ -333,16 +233,6 @@ export default class ResMgr
         });
     }
 
-    public AddAfterLoadResArrayByScene(arrResStruct: Array<ResStruct>,sceneName: string): void
-    {
-        let that = this;
-        arrResStruct.forEach(function(res)
-        {
-            that.AddAfterLoadResByScene(res,sceneName);
-        });
-        arrResStruct.length = 0;
-    }
-
     /**
      * 加载进度回调
      * @param completedCount 
@@ -350,32 +240,7 @@ export default class ResMgr
      */
     private OnProgressCallback(completedCount: number,totalCount: number)
     {
-        // cc.log("loading... ",completedCount,"/",totalCount);
         Core.EventMgr.Emit(EventID.LoadProcessEvent.LoadProgress,[completedCount,totalCount]);
-    }
-
-    /**
-     * 释放资源
-     * @param url 
-     * @param type 
-     */
-    public Release(url: string,type: ResType)
-    {
-        let res = this.m_arrRes.get(type).get(url);
-        if(res)
-        {
-            this.m_arrRes.get(type).delete(url);
-            ObjectPool.CheckIn(res);
-            this.m_mapLoadInfo.get(type).delete(url);
-            // cc.log(url,"资源释放成功");
-            let deps = cc.loader.getDependsRecursively(url);
-            cc.loader.release(deps);
-            cc.loader.releaseRes(url,this.GetResType(type));
-        }
-        else
-        {
-            // cc.log("资源已释放");
-        }
     }
 
     /**
@@ -396,7 +261,12 @@ export default class ResMgr
         //加载完场景后设置一下
         Core.EventMgr.Emit(EventID.LoadProcessEvent.LoadProgress,[1,1]);
         cc.director.preloadScene(sceneName);
+        let arrResList: Array<ResStruct> = [];
         if(this.m_mapScenePreloadRes.has(sceneName))
+        {
+
+        }
+        if(this.m_mapScenePreloadRes.has(sceneName) && this.m_mapScenePreloadRes.get(sceneName).length > 0)
         {
             let arrResList: Array<ResStruct> = this.m_mapScenePreloadRes.get(sceneName);
             if(arrResList.length > 0)
@@ -414,20 +284,6 @@ export default class ResMgr
         else
         {
             this.OnLoadSceneComplete();
-        }
-    }
-
-    /**后加载，尽量较少后加载的量 */
-    public AfterLoadSceneRes(sceneName: string): void
-    {
-        //加载完场景后设置一下
-        if(this.m_mapSceneAfterloadRes.has(sceneName))
-        {
-            let arrResList: Array<ResStruct> = this.m_mapSceneAfterloadRes.get(sceneName);
-            if(arrResList.length > 0)
-            {
-                this.LoadResArray(arrResList,null,true);
-            }
         }
     }
 
@@ -483,35 +339,20 @@ export default class ResMgr
  */
 export class ResStruct
 {
+    /**资源类型 */
     public m_iResType: ResType;
+    /**资源路径 */
     public m_sUrl: string;
-    public m_bAutoRelease: boolean;
     /**返回的资源 */
     private m_stData: any;
-    public static m_iTotalCnt: number = 0;
     constructor()
     {
-        this.m_bAutoRelease = false;
         this.m_sUrl = "";
-        ResStruct.m_iTotalCnt++;
-        if(ResStruct.m_iTotalCnt > 500 && ResStruct.m_iTotalCnt % 10 == 0)
-        {
-            //cc.log("ResStruct.m_iTotalCnt >100,当前数量：",ResStruct.m_iTotalCnt);
-        }
     }
 
     public get Data(): any
     {
         return this.m_stData;
-    }
-
-    public Reset(): void
-    {
-        this.m_iResType = ResType.Bitmap;
-        this.m_sUrl = "";
-        this.m_bAutoRelease = false;
-        this.m_stData = null;
-        ObjectPool.CheckIn(this);
     }
 
     public SetData(data: any,type: ResType): void
@@ -547,7 +388,7 @@ export class ResStruct
      * @param auto 是否在场景切换时销毁，默认不销毁
      * @param isNetWork 是否从网络加载，如腾讯的头像
      */
-    public static CreateRes(url: string,type: ResType = -1,auto: boolean = false): ResStruct
+    public static CreateRes(url: string,type: ResType = -1): ResStruct
     {
         let res: ResStruct = ObjectPool.CheckOut(ResStruct);
         res.m_stData = null;
@@ -572,7 +413,6 @@ export class ResStruct
         {
             throw new Error("资源类型未知" + type + ",url:" + url);
         }
-        res.m_bAutoRelease = auto;
         return res;
     }
 }

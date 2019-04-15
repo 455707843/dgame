@@ -7,6 +7,7 @@ export default class Game extends cc.Component
 {
     start()
     {
-        Core.Init();
+        cc.game.addPersistRootNode(cc.find("PersistNode"));
+        Core.Init(this.node);
     }
 }
